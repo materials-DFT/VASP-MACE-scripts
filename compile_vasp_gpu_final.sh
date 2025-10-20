@@ -10,6 +10,11 @@
 # Based on successful troubleshooting and GPU detection fix
 # =============================================================================
 
+# Install NVIDIA HPC SDK, if not installed already
+wget https://developer.download.nvidia.com/hpc-sdk/25.9/nvhpc_2025_259_Linux_x86_64_cuda_multi.tar.gz
+tar xpzf nvhpc_2025_259_Linux_x86_64_cuda_multi.tar.gz
+nvhpc_2025_259_Linux_x86_64_cuda_multi/install
+
 echo "=========================================="
 echo " VASP GPU Compilation Script"
 echo " Based on successful troubleshooting"
