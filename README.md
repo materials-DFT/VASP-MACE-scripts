@@ -1,6 +1,6 @@
 # 🔬 VASP-MACE-scripts
 
-A collection of Python scripts and shell utilities for automating VASP (Vienna Ab initio Simulation Package) calculations, preparing molecular dynamics simulations, managing MACE (Machine Learning Atomic Cluster Expansion) workflows, and analyzing computational materials science data.
+A collection of Python scripts and shell utilities for automating VASP (Vienna Ab initio Simulation Package) calculations, preparing molecular dynamics simulations, managing MACE (Machine-learning Approach to Chemistry Emulation) workflows, and analyzing computational materials science data.
 
 ## 📋 Overview
 
