@@ -24,6 +24,9 @@ Python utilities for VASP input file generation and manipulation:
 Scripts for Machine Learning Atomic Cluster Expansion workflows:
 
 - **`eval_configs.sh`** 🚀 - SLURM submission script for evaluating MACE models on configuration files. Automatically detects model files and handles GPU allocation.
+- **`mace_1gpu.sh`** 🎯 - SLURM submission script for training MACE models using a single GPU. Automatically finds `.xyz` training files in the submission directory and runs training with standard MACE parameters (64x0e + 64x1o + 64x2e hidden irreps, r_max=5.0, float64 precision).
+- **`mace_2gpus.sh`** 🔀 - SLURM submission script for distributed MACE training across 2 GPUs. Uses the same training parameters as `mace_1gpu.sh` but enables distributed training for faster model convergence on larger datasets.
+- **`mace_4gpus.sh`** ⚡ - SLURM submission script for distributed MACE training across 4 GPUs. Provides maximum training speed for large-scale MACE model training using the same configuration as the single-GPU script.
 
 ### 📁 INCAR_NPT_preparation/
 Tools for preparing NPT (isothermal-isobaric) molecular dynamics simulations:
@@ -104,6 +107,24 @@ python INCAR_NPT_preparation/npt_incar_optimizer.py /path/to/md/runs --backup
 ### 📂 Prepare MD directories for multiple temperatures
 ```bash
 python INCAR_NPT_preparation/prepare_directories_for_md.py /path/to/structures --temps 300,500,700,900
+```
+
+### 🤖 Train MACE model (single GPU)
+```bash
+cd /path/to/training/data  # Directory containing .xyz training file
+sbatch MACE_scripts/mace_1gpu.sh
+```
+
+### 🔀 Train MACE model (2 GPUs, distributed)
+```bash
+cd /path/to/training/data  # Directory containing .xyz training file
+sbatch MACE_scripts/mace_2gpus.sh
+```
+
+### ⚡ Train MACE model (4 GPUs, distributed)
+```bash
+cd /path/to/training/data  # Directory containing .xyz training file
+sbatch MACE_scripts/mace_4gpus.sh
 ```
 
 ### 🤖 Evaluate MACE model
