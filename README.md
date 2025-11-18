@@ -19,6 +19,7 @@ Python utilities for VASP input file generation and manipulation:
 - **`set_magmom_nelect.py`** 🧲 - Recursively updates INCAR files with magnetic moments (MAGMOM) and electron counts (NELECT) based on POSCAR atom counts and POTCAR ZVAL values.
 - **`smass_set_recursive.py`** 🔄 - Sets SMASS parameter recursively across directories.
 - **`standartize_poscar.py`** ✨ - Standardizes POSCAR file formatting.
+- **`bulkmodulus_setup.py`** 📐 - Sets up bulk modulus calculations by generating multiple strained structures. Creates directories with volume-strained POSCAR files (default: -10% to +10% strain, 13 points) for equation of state (EOS) fitting. Automatically modifies INCAR files for single-point energy calculations and handles cleanup of template files.
 
 ### 📁 MACE_scripts/
 Scripts for Machine Learning Atomic Cluster Expansion workflows:
@@ -44,6 +45,12 @@ Data extraction, analysis, and visualization tools:
 - **`parity_plot_per_atom.py`** 📈 - Generates parity plots comparing MACE predictions vs reference (DFT) energies and forces. Creates visualizations for total energy, per-atom energy, and force components.
 - **`converged_global_extract_frames_500+.py`** 💾 - Extracts converged frames from VASP OUTCAR files and writes them to XYZ format. Memory-efficient processing for large trajectory files.
 - **`plot_md_temperature.sh`** 📉 - Shell script for plotting temperature evolution from MD simulations.
+
+### 📁 Data_plotting/
+Advanced plotting and analysis tools for simulation results:
+
+- **`plot_bulk_modulus.py`** 📊 - Analyzes bulk modulus calculations from VASP OUTCAR files. Extracts volume-energy data, fits to Birch-Murnaghan equation of state, and generates comprehensive plots with normalized energy vs volume curves. Automatically detects compounds from directory structure and generates summary tables with fitted parameters (B₀, V₀, B₀', E₀).
+- **`plot_md_pvt.py`** 🌡️ - Interactive plotter for VASP MD simulations showing temperature, volume, and pressure vs step. Supports both GUI (X11) and ASCII output modes. Automatically handles remote X11 connections with robust backend selection (TkAgg/Qt5Agg) and includes fallback ASCII plotting for environments without display.
 
 ### 📁 SLURM_management/
 Utilities for managing computational jobs on SLURM clusters:
@@ -76,13 +83,15 @@ Compilation guides and installation scripts for high-performance computing clust
 ### 📊 Data Analysis
 - 📈 Parity plots for ML model validation
 - 💾 Converged frame extraction from trajectories
-- 🌡️ Temperature and energy analysis
+- 🌡️ Temperature, volume, and pressure analysis from MD simulations
+- 📐 Bulk modulus analysis with Birch-Murnaghan EOS fitting
 
 ## 📦 Dependencies
 
 ### 🐍 Python Packages
 - `numpy` - Numerical computations
 - `matplotlib` - Plotting and visualization
+- `scipy` - Scientific computing (for curve fitting in bulk modulus analysis)
 - `ase` (Atomic Simulation Environment) - Structure manipulation and I/O
 - `pymatgen` - Materials analysis (optional, for some scripts)
 
@@ -145,6 +154,23 @@ bash SLURM_management/check_jobs.sh
 ### 📈 Generate parity plots
 ```bash
 python data_management/parity_plot_per_atom.py mace_vs_ref.xyz
+```
+
+### 📐 Set up bulk modulus calculations
+```bash
+python VASP_scripts/bulkmodulus_setup.py /path/to/structures --min -10.0 --max 10.0 --npts 13
+```
+
+### 📊 Analyze bulk modulus results
+```bash
+python Data_plotting/plot_bulk_modulus.py /path/to/bulk_modulus/calculations
+```
+
+### 🌡️ Plot MD temperature, volume, and pressure
+```bash
+python Data_plotting/plot_md_pvt.py OUTCAR
+# Or force ASCII output:
+python Data_plotting/plot_md_pvt.py OUTCAR --ascii
 ```
 
 ## 💡 Notes
