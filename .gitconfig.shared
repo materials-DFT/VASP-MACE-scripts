@@ -1,0 +1,15 @@
+# .gitconfig.shared
+
+[filter "lfs"]
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
+
+[user]
+    name = Zorikto Erdyneev
+    email = micvalser@gmail.com
+
+[alias]
+    quick = !git add -A && git commit -m "quick update" && git push
+    sync  = !git pull origin main --no-rebase && git push
