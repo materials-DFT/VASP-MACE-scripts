@@ -491,15 +491,6 @@ class VASPAnalyzer:
         report = self.generate_report()
         print(report)
         
-        # Save report to file
-        report_path = os.path.join(root_dir, "vasp_optimization_report.txt")
-        try:
-            with open(report_path, 'w') as f:
-                f.write(report)
-            self.log(f"Report saved to: {report_path}")
-        except Exception as e:
-            self.log(f"Error saving report: {e}", "ERROR")
-        
         return len(self.systems_updated) > 0
 
 
