@@ -359,17 +359,69 @@ class BulkModulusAnalyzer:
                     'fit_result': None
                 })
         
-        # Calculate percentile-based y-axis limits to exclude extreme outliers
-        all_normalized_energies = np.array(all_normalized_energies)
-        y_min_percentile = np.percentile(all_normalized_energies, 1)
-        y_max_percentile = np.percentile(all_normalized_energies, 99)
-        
-        # Use a symmetric range around 0, but cap at percentiles
-        y_range = max(abs(y_min_percentile), abs(y_max_percentile))
-        y_limit = y_range * 1.1  # Add 10% padding
-        
-        # Plot each compound
+        # Detect outlier compounds by their maximum absolute normalized energy
+        # This better captures compounds with extreme energy variations
+        compound_stats = []
         for data in plot_data:
+            energies_norm = data['energies_norm']
+            max_abs_energy = np.max(np.abs(energies_norm))
+            energy_range = np.max(energies_norm) - np.min(energies_norm)
+            compound_stats.append({
+                'compound': data['compound'],
+                'max_abs': max_abs_energy,
+                'range': energy_range
+            })
+        
+        # Calculate percentile-based outlier detection using max absolute energy
+        max_abs_array = np.array([c['max_abs'] for c in compound_stats])
+        # Exclude compounds above 85th percentile to catch more outliers
+        outlier_threshold = np.percentile(max_abs_array, 85)
+        
+        # Use aggressive fixed thresholds to catch extreme outliers
+        # Normalized energies for bulk modulus should typically be < 50 eV
+        # Compounds with much larger variations are likely outliers
+        max_abs_threshold = 100.0  # Exclude compounds with max_abs > 100 eV
+        outlier_threshold = min(outlier_threshold, max_abs_threshold)
+        
+        # Also check energy range for outliers
+        range_array = np.array([c['range'] for c in compound_stats])
+        range_threshold = np.percentile(range_array, 85)
+        range_threshold = min(range_threshold, 200.0)  # Exclude compounds with range > 200 eV
+        
+        # Filter out outlier compounds (exclude if exceeds either threshold)
+        filtered_plot_data = []
+        outlier_compounds = []
+        for i, data in enumerate(plot_data):
+            max_abs = compound_stats[i]['max_abs']
+            energy_range = compound_stats[i]['range']
+            if max_abs <= outlier_threshold and energy_range <= range_threshold:
+                filtered_plot_data.append(data)
+            else:
+                outlier_compounds.append(data['compound'])
+        
+        if outlier_compounds:
+            print(f"\nWarning: Excluding outlier compounds from plot: {', '.join(outlier_compounds)}")
+            print(f"  (Energy range threshold: {outlier_threshold:.1f} eV)\n")
+        
+        # Calculate y-axis limits from non-outlier compounds only
+        filtered_energies = []
+        for data in filtered_plot_data:
+            filtered_energies.extend(data['energies_norm'].tolist())
+        
+        if filtered_energies:
+            filtered_energies = np.array(filtered_energies)
+            # Use 95th percentile of filtered data for cleaner view
+            y_range = np.percentile(np.abs(filtered_energies), 95)
+            y_limit = y_range * 1.2  # Add 20% padding
+        else:
+            # Fallback if all compounds are outliers
+            all_normalized_energies = np.array(all_normalized_energies)
+            y_range = np.percentile(np.abs(all_normalized_energies), 95)
+            y_limit = y_range * 1.2
+            filtered_plot_data = plot_data  # Use all data if everything is outlier
+        
+        # Plot each compound (only non-outliers)
+        for data in filtered_plot_data:
             compound = data['compound']
             volumes = data['volumes']
             energies_norm = data['energies_norm']
@@ -391,14 +443,19 @@ class BulkModulusAnalyzer:
         
         ax.set_xlabel('Volume (Å³)', fontsize=14)
         ax.set_ylabel('Energy - E₀ (eV)', fontsize=14)
-        ax.set_title('Bulk Modulus: Normalized Energy vs Volume (All Compounds)\n(Y-axis limited to 99th percentile range)', 
-                    fontsize=16, fontweight='bold')
+        title = 'Bulk Modulus: Normalized Energy vs Volume'
+        if outlier_compounds:
+            title += f'\n(Excluded outliers: {", ".join(outlier_compounds)})'
+        ax.set_title(title, fontsize=16, fontweight='bold')
         ax.legend(fontsize=8, ncol=3, loc='best', framealpha=0.9)
         ax.grid(True, alpha=0.3)
         ax.axhline(y=0, color='k', linestyle='--', linewidth=1, alpha=0.5)
         
         # Add text annotation about y-axis limits
-        ax.text(0.02, 0.98, f'Y-axis range: ±{y_limit:.1f} eV\n(99th percentile)', 
+        annotation_text = f'Y-axis range: ±{y_limit:.1f} eV'
+        if outlier_compounds:
+            annotation_text += f'\n({len(outlier_compounds)} outlier(s) excluded)'
+        ax.text(0.02, 0.98, annotation_text, 
                transform=ax.transAxes, fontsize=9, verticalalignment='top',
                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
         
