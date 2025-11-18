@@ -228,16 +228,17 @@ def setup_calculation(template_dir, vol_pct_min, vol_pct_max, npts, cleanup=True
             g.write(f"Target volume scale: {scaleV:.6f} (pct {pct:+.1f}%)\n")
             g.write(f"Cell volume: {abs(np.linalg.det(A)):.6f} Å^3 (V0={V0:.6f})\n")
 
-    # Clean up template files if requested
+    # Clean up all files (but keep directories) if requested
     if cleanup:
         removed_count = 0
-        for fn in TEMPLATE_FILES_TO_REMOVE:
-            template_file = os.path.join(template_dir, fn)
-            if os.path.isfile(template_file):
-                os.remove(template_file)
+        for item in os.listdir(template_dir):
+            item_path = os.path.join(template_dir, item)
+            # Only remove files, not directories (keep V_* directories)
+            if os.path.isfile(item_path):
+                os.remove(item_path)
                 removed_count += 1
         if removed_count > 0:
-            print(f"  Removed {removed_count} template file(s) from {template_dir}")
+            print(f"  Removed {removed_count} file(s) from {template_dir} (kept directories)")
 
     print(f"  Made {npts} EOS points from {vol_pct_min}% to {vol_pct_max}%.")
     return True
